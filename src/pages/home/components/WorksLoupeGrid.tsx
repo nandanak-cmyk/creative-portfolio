@@ -26,6 +26,11 @@ function LoupeTile({ project: p, index, aspect }: LoupeTileProps) {
   const loupeRef = useRef<HTMLDivElement>(null);
   const zoomRef = useRef<HTMLImageElement>(null);
   const [on, setOn] = useState(false);
+  // Each picture is a small live slideshow of the project: the cover, then its two detail pictures.
+  const pics = useMemo(() => [{ image: p.image, alt: p.alt }, ...p.gallery], [p]);
+  const [idx, setIdx] = useState(0);
+  const hovering = useRef(false);
+  const visible = useRef(false);
   const fine = useMemo(() => window.matchMedia('(hover: hover) and (pointer: fine)').matches, []);
   const s = useRef({ w: 1, h: 1, tx: 0, ty: 0, x: 0, y: 0, raf: 0, first: true });
 
@@ -49,6 +54,28 @@ function LoupeTile({ project: p, index, aspect }: LoupeTileProps) {
 
   useEffect(() => () => cancelAnimationFrame(s.current.raf), []);
 
+  useEffect(() => {
+    const tile = tileRef.current;
+    if (!tile || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const io = new IntersectionObserver(([e]) => {
+      visible.current = e.isIntersecting;
+    });
+    io.observe(tile);
+    // Tiles change one after another, not all at once; phones change a little more slowly.
+    const period = window.matchMedia('(pointer: coarse)').matches ? 5200 : 4200;
+    let interval = 0;
+    const start = window.setTimeout(() => {
+      interval = window.setInterval(() => {
+        if (!document.hidden && visible.current && !hovering.current) setIdx((i) => (i + 1) % pics.length);
+      }, period);
+    }, 900 + index * 700);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(start);
+      window.clearInterval(interval);
+    };
+  }, [index, pics.length]);
+
   const move = (ev: React.PointerEvent): void => {
     const tile = tileRef.current;
     if (!tile || ev.pointerType !== 'mouse') return;
@@ -65,6 +92,7 @@ function LoupeTile({ project: p, index, aspect }: LoupeTileProps) {
 
   const enter = (ev: React.PointerEvent): void => {
     if (!fine || ev.pointerType !== 'mouse') return;
+    hovering.current = true;
     const tile = tileRef.current;
     const zoom = zoomRef.current;
     if (!tile || !zoom) return;
@@ -83,6 +111,7 @@ function LoupeTile({ project: p, index, aspect }: LoupeTileProps) {
   };
 
   const leave = (): void => {
+    hovering.current = false;
     cancelAnimationFrame(s.current.raf);
     setOn(false);
   };
@@ -106,15 +135,29 @@ function LoupeTile({ project: p, index, aspect }: LoupeTileProps) {
             className="relative overflow-hidden rounded-2xl border border-white/15 shadow-[0_30px_80px_-34px_rgba(255,0,60,0.5)] transition-[box-shadow,border-color] duration-500 group-hover:border-white/35 group-hover:shadow-[0_34px_90px_-30px_rgba(255,60,90,0.7)]"
             style={{ aspectRatio: aspect }}
           >
-            <img
-              src={p.image}
-              alt={p.alt}
-              loading="lazy"
-              decoding="async"
-              draggable={false}
-              className="h-full w-full object-cover"
-            />
+            {pics.map((pic, k) => (
+              <img
+                key={pic.image}
+                src={pic.image}
+                alt={k === idx ? pic.alt : ''}
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+                className={`works-kb absolute inset-0 h-full w-full object-cover transition-opacity duration-[1100ms] ease-in-out ${
+                  k === idx ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            ))}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-bg/55 via-transparent to-transparent" />
+            {/* Progress dots: which picture of the project is showing */}
+            <span aria-hidden="true" className="absolute right-3 top-4 flex items-center gap-1.5 md:right-4">
+              {pics.map((pic, k) => (
+                <span
+                  key={pic.image}
+                  className={`h-1 rounded-full bg-white transition-all duration-500 ${k === idx ? 'w-5 opacity-100' : 'w-1.5 opacity-40'}`}
+                />
+              ))}
+            </span>
             <span className="absolute left-3 top-3 whitespace-nowrap rounded-full border border-white/25 bg-brand-bg/70 px-2.5 py-1 text-[9px] uppercase tracking-[0.14em] text-brand-cyan md:left-4 md:top-4 md:px-3 md:text-[10px] md:tracking-[0.18em]">
               No. {String(index + 1).padStart(2, '0')} · {p.subtitle}
             </span>
@@ -140,7 +183,7 @@ function LoupeTile({ project: p, index, aspect }: LoupeTileProps) {
               >
                 <img
                   ref={zoomRef}
-                  src={p.image}
+                  src={pics[idx].image}
                   alt=""
                   draggable={false}
                   className="absolute left-0 top-0 max-w-none object-cover will-change-transform"
@@ -176,7 +219,7 @@ interface WorksLoupeGridProps {
 /** Photo grid of the projects, each with a hover magnifier. Laid out in columns so the different shapes interlock. */
 export default function WorksLoupeGrid({ projects }: WorksLoupeGridProps) {
   return (
-    <div data-reveal className="mt-12 columns-2 gap-4 md:mt-14 md:columns-3 md:gap-7">
+    <div className="mt-12 columns-2 gap-4 md:mt-14 md:columns-3 md:gap-7">
       {projects.map((p, i) => (
         <LoupeTile key={p.slug} project={p} index={i} aspect={ASPECTS[i % ASPECTS.length]} />
       ))}
