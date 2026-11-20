@@ -47,9 +47,9 @@ export function useReveal(root: RefObject<HTMLElement>): void {
           gsap.from(node, {
             y: 36,
             opacity: 0,
-            filter: 'blur(8px)',
             duration: 0.75,
             ease: 'power4.out',
+            clearProps: 'transform,opacity',
             delay: Number(node.dataset.delay ?? 0),
             scrollTrigger: { trigger: node, start: 'top bottom-=40', once: true },
           });

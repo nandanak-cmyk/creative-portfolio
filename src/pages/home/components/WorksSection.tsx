@@ -1,21 +1,17 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 
-import { ALL_WORK_HREF, PROJECTS, WORK, projectPath } from '../content';
-import { rememberHomeScroll } from '../nav-state';
+import { PROJECTS, WORK } from '../content';
 
-import GlassCard from './GlassCard';
-import MagneticLink from './MagneticLink';
+import SectionBackdrop from './SectionBackdrop';
 import SectionLabel from './SectionLabel';
 import SplitHeadline from './SplitHeadline';
-import Tag from './Tag';
-import SectionBackdrop from './SectionBackdrop';
+import WorksLoupeGrid from './WorksLoupeGrid';
 
 const ALL = 'All';
 
-/** Category filter tabs followed by the project grid. */
+/** Category filter tabs followed by the photo grid with hover magnifiers. */
 export default function WorksSection() {
   const [category, setCategory] = useState<string>(ALL);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -30,7 +26,7 @@ export default function WorksSection() {
 
   const visible = category === ALL ? PROJECTS : PROJECTS.filter((p) => p.subtitle === category);
 
-  // Animate the grid when the filter changes (not on first paint), then re-measure scroll triggers.
+  // When the filter changes (not on first paint) the pictures rise in again, one after another.
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
@@ -38,14 +34,14 @@ export default function WorksSection() {
     }
     const grid = gridRef.current;
     if (!grid) return undefined;
-    const items = grid.querySelectorAll<HTMLElement>('[data-work-card]');
+    const tiles = grid.querySelectorAll<HTMLElement>('[data-tile]');
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const tween = reduce
       ? null
       : gsap.fromTo(
-          items,
-          { y: 36, opacity: 0, scale: 0.96 },
-          { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: 'power4.out', stagger: 0.08, clearProps: 'transform,opacity' },
+          tiles,
+          { y: 40, opacity: 0, scale: 0.97 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.8, ease: 'power3.out', stagger: 0.09, clearProps: 'transform,opacity' },
         );
     ScrollTrigger.refresh();
     return () => {
@@ -54,7 +50,7 @@ export default function WorksSection() {
   }, [category]);
 
   return (
-    <section id="projects"  className="relative px-5 py-28 md:px-10 md:py-36">
+    <section id="projects" className="relative px-5 py-28 md:px-10 md:py-36">
       <SectionBackdrop variant="projects" />
       <div data-float="-160" className="pointer-events-none absolute left-0 top-1/3 h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(closest-side,rgba(0,107,255,0.14),transparent)] blur-2xl" />
       <div className="relative mx-auto max-w-7xl">
@@ -105,55 +101,17 @@ export default function WorksSection() {
           Showing {visible.length} {visible.length === 1 ? 'project' : 'projects'} in {category}
         </p>
 
-        <div ref={gridRef} className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {visible.map((p, i) => (
-            <div key={p.slug} data-scrub-card data-work-card>
-              <Link to={projectPath(p.slug)} onClick={rememberHomeScroll} className="block" aria-label={`Open project: ${p.title}`}>
-                <GlassCard data-reveal data-delay={(i % 3) * 0.08} className="group overflow-hidden">
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <img
-                      src={p.image}
-                      alt={p.alt}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-bg/90 via-brand-bg/10 to-transparent" />
-                    <span className="absolute left-4 top-4 rounded-full border border-white/20 bg-brand-bg/60 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-brand-cyan backdrop-blur-md">
-                      {p.subtitle}
-                    </span>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-baseline justify-between gap-4">
-                      <h3 className="font-display text-2xl font-semibold">{p.title}</h3>
-                      <span className="font-display text-sm text-white/45">{p.year}</span>
-                    </div>
-                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#ffb3c4]">{p.categories}</p>
-                    <p className="mt-4 text-sm leading-relaxed text-brand-white/70">{p.description}</p>
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {p.tags.map((t) => (
-                        <Tag key={t}>{t}</Tag>
-                      ))}
-                    </div>
-                    <p className="mt-6 flex items-center gap-2 text-sm font-medium text-brand-white">
-                      {WORK.viewProject}
-                      <span className="text-brand-red transition-transform duration-300 group-hover:translate-x-1.5">→</span>
-                    </p>
-                  </div>
-                </GlassCard>
-              </Link>
-            </div>
-          ))}
+        <div ref={gridRef}>
+          <WorksLoupeGrid projects={visible} />
         </div>
 
-        <div data-reveal className="mt-14 text-center">
-          <MagneticLink
-            href={ALL_WORK_HREF}
-            className="btn-glass inline-block px-9 py-4 text-sm font-semibold"
-          >
-            {WORK.viewAll}
-          </MagneticLink>
-        </div>
+        {category !== ALL ? (
+          <div className="mt-10 text-center">
+            <button type="button" onClick={() => setCategory(ALL)} className="btn-glass inline-block px-9 py-4 text-sm font-semibold">
+              {WORK.viewAll}
+            </button>
+          </div>
+        ) : null}
       </div>
     </section>
   );

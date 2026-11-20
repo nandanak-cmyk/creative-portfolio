@@ -72,7 +72,7 @@ export default function HeroBackground({ logo = true }: HeroBackgroundProps) {
     <div ref={wrapRef} className="hero-sky pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
       {failed ? (
         logo ? (
-          <div className="absolute inset-0 bg-[url('/hero-logo.png')] bg-contain bg-top bg-no-repeat md:bg-center" />
+          <div className="absolute inset-0 bg-[url('/hero-logo.webp')] bg-contain bg-top bg-no-repeat md:bg-center" />
         ) : null
       ) : (
         <canvas ref={canvasRef} className="h-full w-full" />

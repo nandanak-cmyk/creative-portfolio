@@ -213,3 +213,15 @@ body {
     animation: none;
   }
 }
+
+/* Phones: animated gradient text and drifting full-screen layers make text flicker on mobile GPUs. Keep them still. */
+@media (hover: none), (max-width: 767px) {
+  .neon-chrome,
+  .neon-liquid,
+  .light-drift {
+    animation: none;
+  }
+  .light-drift {
+    will-change: auto;
+  }
+}

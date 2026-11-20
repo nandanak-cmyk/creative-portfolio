@@ -22,7 +22,7 @@ export interface HeroSceneHandle {
   dispose: () => void;
 }
 
-const IMAGE_URL = '/hero-logo.png';
+const IMAGE_URL = '/hero-logo.webp';
 const IMAGE_ASPECT = 1536 / 1024;
 
 /** Where the mark's visual centre sits inside the picture (fraction from the left / top). */
@@ -262,7 +262,7 @@ export function createHeroScene(
     const resize = (): void => {
       width = Math.max(1, container.clientWidth);
       height = Math.max(1, container.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, lowPower ? 1.5 : 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, lowPower ? 1.25 : 2));
       renderer.setSize(width, height, false);
       camera.left = -width / 2;
       camera.right = width / 2;

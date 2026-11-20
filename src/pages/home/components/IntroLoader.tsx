@@ -43,7 +43,7 @@ export default function IntroLoader() {
       const img = new Image();
       img.onload = () => resolve();
       img.onerror = () => resolve();
-      img.src = '/hero-logo.png';
+      img.src = '/hero-logo.webp';
     });
 
     const intro = gsap.timeline();

@@ -10,6 +10,8 @@ import { rememberHomeScroll } from '../nav-state';
 import { openProjectFromCard } from '../open-project';
 
 gsap.registerPlugin(ScrollTrigger);
+// Phones: the address bar sliding away changes the window height; do not rebuild the carousel for that.
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 const CARDS = PROJECTS;
 /** Scroll spent clearing the hero (logo zooms, text fades) before the first card shows. */
@@ -264,7 +266,7 @@ export default function HeroCardTrack() {
           defaults: { ease: 'none' },
           scrollTrigger: { trigger: wrap, start: 'top top', end: () => `top+=${clearHero()} top`, scrub: 0.2 },
         })
-        .to(hero, { y: -70, autoAlpha: 0, filter: 'blur(8px)', duration: 0.7 }, 0.05)
+        .to(hero, { y: -70, autoAlpha: 0, duration: 0.7 }, 0.05)
         .fromTo('[data-stage-ui]', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, 0.7)
         .fromTo('[data-stage-flare]', { opacity: 0, scale: 0.3 }, { opacity: 0.9, scale: 1.5, duration: 0.3 }, 0.6)
         .to('[data-stage-flare]', { opacity: 0, duration: 0.25 }, 0.92);
@@ -392,14 +394,14 @@ export default function HeroCardTrack() {
                     src={card.image}
                     alt={card.alt}
                     draggable={false}
-                    loading={i < 3 ? 'eager' : 'lazy'}
+                    loading="eager"
                     decoding="async"
-                    className="h-full w-full object-cover will-change-transform"
+                    className="h-full w-full object-cover"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-bg/85 via-transparent to-brand-bg/15" />
                   {/* Glossy highlight that follows the pointer */}
                   <div
-                    className="pointer-events-none absolute inset-0 mix-blend-overlay"
+                    className="pointer-events-none absolute inset-0"
                     style={{
                       background: 'radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,0.6), transparent 55%)',
                       opacity: 'calc(var(--f) * 0.9)',

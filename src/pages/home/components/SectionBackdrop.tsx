@@ -141,7 +141,7 @@ export default function SectionBackdrop({ variant }: { variant: BackdropVariant 
           <div
             className="light-drift h-full w-full"
             style={{
-              backgroundImage: 'url(/light-ribbons.png)',
+              backgroundImage: 'url(/light-ribbons.webp)',
               backgroundRepeat: 'no-repeat',
               backgroundSize: v.size,
               backgroundPosition: v.pos,
@@ -157,7 +157,7 @@ export default function SectionBackdrop({ variant }: { variant: BackdropVariant 
           <div
             className="light-drift h-full w-full"
             style={{
-              backgroundImage: 'url(/light-ribbons.png)',
+              backgroundImage: 'url(/light-ribbons.webp)',
               backgroundRepeat: 'no-repeat',
               backgroundSize: v.size,
               backgroundPosition: '50% 92%',
