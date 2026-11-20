@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background: #030305;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  @apply bg-brand-bg font-sans text-brand-white antialiased;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: #ff003c;
+  color: #fff;
+}
+
+@layer components {
+  /* Chrome-glass headline fill with a slow light sweep, glowing like the artwork. */
+  .neon-chrome {
+    background-image: linear-gradient(110deg, #f5f5f5 0%, #c9d4ff 38%, #ffffff 50%, #8f9bc4 62%, #f5f5f5 100%);
+    background-size: 260% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shine 6s linear infinite;
+  }
+
+  /* Red -> blue -> cyan liquid gradient for the accent words. */
+  .neon-liquid {
+    background-image: linear-gradient(100deg, #ff003c 0%, #ff3d6e 20%, #006bff 50%, #00cfff 72%, #ff003c 100%);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: liquid 5s linear infinite;
+  }
+
+  /* Glow is applied to the whole heading, not per masked word, so it is never clipped into boxes. */
+  .neon-glow {
+    filter: drop-shadow(0 0 14px rgba(255, 0, 60, 0.32)) drop-shadow(0 0 34px rgba(0, 107, 255, 0.26));
+  }
+
+  /*
+   * Hero sky: a rich "bright black". A lifted neutral black with a soft top light and a
+   * faint crimson glow low on the left. No blue or violet wash.
+   */
+  .hero-sky {
+    background:
+      radial-gradient(60% 45% at 55% 0%, rgba(255, 255, 255, 0.075), transparent 70%),
+      radial-gradient(45% 55% at 8% 70%, rgba(255, 0, 60, 0.2), transparent 70%),
+      radial-gradient(40% 45% at 92% 30%, rgba(255, 255, 255, 0.04), transparent 70%),
+      linear-gradient(180deg, #0e0d12 0%, #08070b 50%, #040406 100%);
+  }
+
+  /*
+   * Premium buttons. Primary: deep wine glass with a hairline light edge, an inner top
+   * highlight and a quiet crimson under-glow (no loud red). Secondary: frosted glass.
+   * Both get a slow sheen that sweeps across on hover.
+   */
+  .btn-premium,
+  .btn-glass {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+    /* No `transform` transition: the magnetic hover (GSAP) moves these buttons. */
+    transition: box-shadow 0.5s, border-color 0.4s, background 0.4s;
+  }
+  .btn-premium {
+    color: #f5f5f5;
+    background: linear-gradient(135deg, #5a1224 0%, #2c0a14 55%, #1a070d 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.26),
+      inset 0 -12px 22px rgba(0, 0, 0, 0.4),
+      0 14px 34px -14px rgba(255, 30, 70, 0.32),
+      0 2px 0 rgba(0, 0, 0, 0.4);
+  }
+  .btn-premium:hover {
+    border-color: rgba(255, 255, 255, 0.38);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.34),
+      inset 0 -12px 22px rgba(0, 0, 0, 0.35),
+      0 20px 44px -14px rgba(255, 30, 70, 0.45),
+      0 2px 0 rgba(0, 0, 0, 0.4);
+  }
+  .btn-glass {
+    color: #f5f5f5;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 12px 30px -16px rgba(0, 0, 0, 0.8);
+  }
+  .btn-glass:hover {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.04));
+    border-color: rgba(255, 255, 255, 0.36);
+  }
+  .btn-premium::after,
+  .btn-glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.22) 50%, transparent 65%);
+    transform: translateX(-120%);
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .btn-premium:hover::after,
+  .btn-glass:hover::after {
+    transform: translateX(120%);
+  }
+
+  /* Outlined display text for the marquee. */
+  .text-outline {
+    -webkit-text-stroke: 1px rgba(245, 245, 245, 0.38);
+    color: transparent;
+  }
+
+  .neon-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ff003c 25%, #006bff 75%, transparent);
+    box-shadow: 0 0 18px rgba(255, 0, 60, 0.5);
+  }
+
+  /* Glass panel with a neon border that tracks the cursor (--mx / --my). */
+  .glass-card {
+    position: relative;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: radial-gradient(
+      260px circle at var(--mx, 50%) var(--my, 0%),
+      rgba(255, 0, 60, 0.95),
+      rgba(0, 107, 255, 0.65) 42%,
+      rgba(255, 255, 255, 0.07) 72%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+  .glass-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 0%), rgba(0, 207, 255, 0.12), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .glass-card:hover::after {
+    opacity: 1;
+  }
+}
+
+@keyframes shine {
+  to {
+    background-position: -260% 0;
+  }
+}
+@keyframes liquid {
+  to {
+    background-position: -300% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-chrome,
+  .neon-liquid {
+    animation: none;
+  }
+}
+
+/* Slow, subtle movement of the light ribbons behind the sections (see SectionBackdrop). */
+.light-drift {
+  animation: light-drift 22s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes light-drift {
+  from {
+    transform: translate3d(-1.6%, 1%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(1.6%, -1.6%, 0) scale(1.07);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .light-drift {
+    animation: none;
+  }
+}
