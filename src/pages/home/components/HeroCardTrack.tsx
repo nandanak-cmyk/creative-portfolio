@@ -24,6 +24,8 @@ const isLite = (): boolean => window.matchMedia('(pointer: coarse)').matches || 
 const clearHero = (): number => window.innerHeight * 0.45;
 /** Cards travel this many px per px of scroll, so they feel quick and responsive. */
 const CARD_SPEED = 1.7;
+/** On phones the cards travel much less per px of scroll: a thumb flick covers a lot of ground, so 1.7 felt far too fast. */
+const CARD_SPEED_LITE = 0.75;
 
 /** Light streaks that rush across the screen; they brighten with scroll speed. */
 const SPEED_LINES = [
@@ -135,10 +137,11 @@ export default function HeroCardTrack() {
       const start = first ? window.innerWidth - first : window.innerWidth * 0.75;
       return { start, end };
     };
+    const speed = lite ? CARD_SPEED_LITE : CARD_SPEED;
     const setHeight = (): void => {
       measure();
       const { start, end } = range();
-      wrap.style.height = `${window.innerHeight + clearHero() + (start - end) / CARD_SPEED}px`;
+      wrap.style.height = `${window.innerHeight + clearHero() + (start - end) / speed}px`;
     };
     setHeight();
 
@@ -249,9 +252,6 @@ export default function HeroCardTrack() {
         outer.style.transform = `translate3d(0,${y.toFixed(1)}px,${z.toFixed(1)}px) scale(${sc.toFixed(3)})`;
         // Drive the card's glow, gloss, frame and text from these.
         outer.style.setProperty('--f', f.toFixed(3));
-        outer.style.setProperty('--gx', `${(50 + ptr.x * 30 - d * 25).toFixed(1)}%`);
-        outer.style.setProperty('--gy', `${(50 + ptr.y * 30).toFixed(1)}%`);
-        outer.style.setProperty('--sx', `${(50 - d * 70).toFixed(1)}%`);
         img.style.transform = `translate3d(${(-d * 38).toFixed(1)}px,0,0) scale(${(1.2 + 0.1 * f).toFixed(3)})`;
       });
 
@@ -318,8 +318,7 @@ export default function HeroCardTrack() {
           defaults: { ease: 'none' },
           scrollTrigger: { trigger: wrap, start: 'top top', end: () => `top+=${clearHero()} top`, scrub: 0.2 },
         })
-        .to(hero, { y: -70, autoAlpha: 0, duration: 0.7 }, 0.05)
-        .fromTo('[data-stage-bg]', { opacity: 0 }, { opacity: 1, duration: 0.45 }, 0.4)
+        .to(hero, { y: -70, autoAlpha: 0, ...(lite ? {} : { filter: 'blur(8px)' }), duration: 0.7 }, 0.05)
         .fromTo('[data-stage-ui]', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, 0.7)
         .fromTo('[data-stage-flare]', { opacity: 0, scale: 0.3 }, { opacity: 0.9, scale: 1.5, duration: 0.3 }, 0.6)
         .to('[data-stage-flare]', { opacity: 0, duration: 0.25 }, 0.92);
@@ -360,9 +359,6 @@ export default function HeroCardTrack() {
             reduced ? 'overflow-x-auto' : 'overflow-hidden'
           }`}
         >
-          {/* Solid stage: once the hero has cleared, the card section stands on its own dark ground instead of blending into the hero */}
-          <div data-stage-bg className="pointer-events-none absolute inset-0 bg-brand-bg opacity-0" aria-hidden="true" />
-
           {/* Background wash: the selected card's colour, set every frame by the scroll loop */}
           <div
             ref={moodRef}
@@ -396,7 +392,7 @@ export default function HeroCardTrack() {
           <div className="pointer-events-none absolute inset-y-0 -right-[10vw] flex items-center" aria-hidden="true">
             <div
               data-stage-flare
-              className={`h-[70vw] w-[70vw] rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.5),rgba(255,40,70,0.28)_40%,transparent_70%)] opacity-0 ${lite ? '' : 'blur-2xl'}`}
+              className={`h-[70vw] w-[70vw] rounded-full bg-[radial-gradient(closest-side,rgba(255,40,70,0.4),rgba(255,40,70,0.2)_40%,transparent_70%)] opacity-0 ${lite ? '' : 'blur-2xl'}`}
             />
           </div>
 
@@ -464,27 +460,6 @@ export default function HeroCardTrack() {
                     className="h-full w-full object-cover"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-bg/85 via-transparent to-brand-bg/15" />
-                  {/* Glossy highlight that follows the pointer (desktop only) */}
-                  {!lite ? (
-                  <div
-                    className="pointer-events-none absolute inset-0"
-                    style={{
-                      background: 'radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,0.6), transparent 55%)',
-                      opacity: 'calc(var(--f) * 0.9)',
-                    }}
-                  />
-                  ) : null}
-                  {/* Sheen that sweeps across the card as it passes through the centre */}
-                  {!lite ? (
-                  <div
-                    className="pointer-events-none absolute inset-0"
-                    style={{
-                      background:
-                        'linear-gradient(105deg, transparent calc(var(--sx) - 14%), rgba(255,255,255,0.2) var(--sx), transparent calc(var(--sx) + 14%))',
-                      opacity: 'calc(0.25 + var(--f) * 0.75)',
-                    }}
-                  />
-                  ) : null}
                   {/* Neon frame that tightens in when the card is in focus */}
                   <div
                     className={`pointer-events-none absolute inset-3 rounded-[1.35rem] border border-white/60 ${

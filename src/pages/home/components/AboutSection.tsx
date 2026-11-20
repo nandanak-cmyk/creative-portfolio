@@ -32,8 +32,33 @@ export default function AboutSection() {
     const edge = edgeRef.current;
     if (!wrap || !section || !edge || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     // Phones: pinning a section over the window while the address bar resizes makes the page jump and flash, and the
-    // stacked layout is taller than the screen. There the section simply scrolls in normally.
-    if (window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768) return undefined;
+    // stacked layout is taller than the screen. There the section scrolls in normally, and its text and pictures
+    // slide in from the sides as they come into view.
+    if (window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768) {
+      const ctx = gsap.context(() => {
+        const text = section.querySelector('[data-about-text]');
+        const wall = section.querySelector('[data-about-wall]');
+        const slide = (el: Element | null, x: number, delay = 0): void => {
+          if (!el) return;
+          gsap.fromTo(
+            el,
+            { x, opacity: 0 },
+            {
+              x: 0,
+              opacity: 1,
+              duration: 0.9,
+              delay,
+              ease: 'power3.out',
+              clearProps: 'transform,opacity',
+              scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+            },
+          );
+        };
+        slide(text, -70);
+        slide(wall, 70, 0.1);
+      }, section);
+      return () => ctx.revert();
+    }
 
     let busy = false;
     let timeline: gsap.core.Timeline | null = null;
@@ -71,7 +96,7 @@ export default function AboutSection() {
       // Keep the page's length while the section is lifted out of the flow, then pin it over the window.
       const height = section.getBoundingClientRect().height;
       wrap.style.height = `${height}px`;
-      const content = section.querySelector('[data-about-content]');
+      const text = section.querySelector('[data-about-text]');
       const tiles = section.querySelectorAll('[data-wall-tile]');
 
       gsap.set(section, {
@@ -84,19 +109,20 @@ export default function AboutSection() {
         overflow: 'hidden',
         clipPath: 'inset(0% 0% 0% 100%)',
       });
-      gsap.set(content, { x: 80, opacity: 0 });
-      gsap.set(tiles, { x: 110, scale: 0.92, opacity: 0 });
+      // The words arrive from the left and the pictures from the right, so the two halves meet in the middle.
+      gsap.set(text, { x: -130, opacity: 0 });
+      gsap.set(tiles, { x: 130, scale: 0.92, opacity: 0 });
 
       timeline = gsap
         .timeline({ onComplete: release })
         // The section sweeps in from the right...
-        .to(section, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.95, ease: 'power3.inOut' }, 0)
+        .to(section, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'power3.inOut' }, 0)
         // ...led by a bright edge of light.
-        .fromTo(edge, { left: '100%', opacity: 1 }, { left: '0%', duration: 0.95, ease: 'power3.inOut' }, 0)
-        .to(edge, { opacity: 0, duration: 0.2 }, 0.8)
+        .fromTo(edge, { left: '100%', opacity: 1 }, { left: '0%', duration: 0.8, ease: 'power3.inOut' }, 0)
+        .to(edge, { opacity: 0, duration: 0.2 }, 0.65)
         // Its content slides in behind the edge.
-        .to(content, { x: 0, opacity: 1, duration: 0.9, ease: 'power3.out' }, 0.3)
-        .to(tiles, { x: 0, scale: 1, opacity: 1, duration: 0.8, ease: 'power3.out', stagger: 0.08 }, 0.45);
+        .to(text, { x: 0, opacity: 1, duration: 0.75, ease: 'power3.out' }, 0.08)
+        .to(tiles, { x: 0, scale: 1, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.06 }, 0.15);
     };
 
     // Fires as the end of the gallery reaches the bottom of the screen, only when scrolling down into it.
@@ -129,16 +155,22 @@ export default function AboutSection() {
         <SectionBackdrop variant="about" />
 
         <div data-about-content className="relative mx-auto grid max-w-7xl items-center gap-14 md:grid-cols-[1.05fr_1fr] md:gap-16">
-          <div>
+          <div data-about-text>
             <SectionLabel>{ABOUT.eyebrow}</SectionLabel>
             <SplitHeadline
               text={ABOUT.headline}
               className="font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl"
             />
             <ScrubText text={ABOUT.text} className="mt-8 text-lg leading-relaxed text-brand-white md:text-2xl md:leading-snug" />
+            {/* A thin line of light that keeps travelling, so the block never feels static */}
+            <div aria-hidden="true" className="relative mt-10 h-px w-full max-w-md overflow-hidden bg-white/10">
+              <div className="about-sweep absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-brand-red to-transparent" />
+            </div>
           </div>
 
-          <AboutPhotoWall />
+          <div data-about-wall>
+            <AboutPhotoWall />
+          </div>
         </div>
       </section>
     </div>

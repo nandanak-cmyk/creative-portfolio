@@ -246,3 +246,21 @@ body {
     animation: works-kb 9s ease-in-out infinite alternate;
   }
 }
+
+/* About: a line of light that keeps sliding along a hairline. */
+@keyframes about-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+.about-sweep {
+  animation: about-sweep 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-sweep {
+    animation: none;
+  }
+}
