@@ -115,7 +115,7 @@ function LoupeTile({ project: p, index, aspect }: LoupeTileProps) {
               className="h-full w-full object-cover"
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-bg/55 via-transparent to-transparent" />
-            <span className="absolute left-4 top-4 rounded-full border border-white/25 bg-brand-bg/55 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-brand-cyan backdrop-blur-md">
+            <span className="absolute left-3 top-3 whitespace-nowrap rounded-full border border-white/25 bg-brand-bg/70 px-2.5 py-1 text-[9px] uppercase tracking-[0.14em] text-brand-cyan md:left-4 md:top-4 md:px-3 md:text-[10px] md:tracking-[0.18em]">
               No. {String(index + 1).padStart(2, '0')} · {p.subtitle}
             </span>
           </div>

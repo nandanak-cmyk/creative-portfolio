@@ -31,6 +31,9 @@ export default function AboutSection() {
     const section = sectionRef.current;
     const edge = edgeRef.current;
     if (!wrap || !section || !edge || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    // Phones: pinning a section over the window while the address bar resizes makes the page jump and flash, and the
+    // stacked layout is taller than the screen. There the section simply scrolls in normally.
+    if (window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768) return undefined;
 
     let busy = false;
     let timeline: gsap.core.Timeline | null = null;

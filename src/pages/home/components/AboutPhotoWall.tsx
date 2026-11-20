@@ -48,7 +48,8 @@ export default function AboutPhotoWall() {
 
   useEffect(() => {
     const wall = wallRef.current;
-    if (!wall || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    // No 3D flipping on phones: it flickers there, so the pictures stay still.
+    if (!wall || window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.matchMedia('(pointer: coarse)').matches) return undefined;
 
     let inView = false;
     const io = new IntersectionObserver(([entry]) => {
