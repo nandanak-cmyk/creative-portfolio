@@ -28,6 +28,7 @@ export function useReveal(root: RefObject<HTMLElement>): void {
 
     void introReady.then(() => {
       if (cancelled) return;
+      const touch = window.matchMedia('(pointer: coarse)').matches;
       ctx = gsap.context(() => {
         gsap.utils.toArray<HTMLElement>('[data-split]').forEach((block) => {
           gsap.from(block.querySelectorAll('[data-word]'), {
@@ -56,6 +57,7 @@ export function useReveal(root: RefObject<HTMLElement>): void {
         });
 
         gsap.utils.toArray<HTMLElement>('[data-parallax]').forEach((node) => {
+          if (touch) return; // scroll-driven drifting layers flicker on phones
           gsap.to(node, {
             y: Number(node.dataset.parallax ?? -60),
             ease: 'none',
@@ -64,6 +66,7 @@ export function useReveal(root: RefObject<HTMLElement>): void {
         });
 
         gsap.utils.toArray<HTMLElement>('[data-float]').forEach((node) => {
+          if (touch) return; // scroll-driven drifting layers flicker on phones
           const px = Number(node.dataset.float ?? -120);
           gsap.fromTo(
             node,
@@ -100,6 +103,7 @@ export function useReveal(root: RefObject<HTMLElement>): void {
         });
 
         gsap.utils.toArray<HTMLElement>('[data-drift]').forEach((node) => {
+          if (touch) return; // scroll-driven drifting layers flicker on phones
           gsap.fromTo(
             node,
             { xPercent: 0 },

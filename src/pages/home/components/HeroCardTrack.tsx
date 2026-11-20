@@ -14,6 +14,12 @@ gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
 
 const CARDS = PROJECTS;
+/**
+ * Phones and tablets get a lighter version of the carousel: the cards only slide and scale (no 3D, no per-frame
+ * glow, shadow or gradient changes), and the focused card is marked with an attribute that CSS fades in. This keeps
+ * the picture and text layers still instead of repainting them every frame, which is what made them flash.
+ */
+const isLite = (): boolean => window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
 /** Scroll spent clearing the hero (logo zooms, text fades) before the first card shows. */
 const clearHero = (): number => window.innerHeight * 0.45;
 /** Cards travel this many px per px of scroll, so they feel quick and responsive. */
@@ -55,6 +61,7 @@ export default function HeroCardTrack() {
   // Card colours as numbers, for blending inside the per-frame loop.
   const rgbRef = useRef<number[][]>(CARDS.map((c) => (MOOD_OVERRIDES[c.slug] ?? DEFAULT_MOOD).split(',').map(Number)));
   const [colors, setColors] = useState<string[]>(() => CARDS.map((c) => MOOD_OVERRIDES[c.slug] ?? DEFAULT_MOOD));
+  const [lite] = useState(isLite);
   const [reduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   // Read each picture's dominant colour once (used for the card's glow).
@@ -144,12 +151,13 @@ export default function HeroCardTrack() {
     let vel = 0;
     let inView = false;
     let firstEntering = 0;
+    let activeCard = -1;
     const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
     const onPointer = (ev: PointerEvent): void => {
       ptr.tx = (ev.clientX / window.innerWidth) * 2 - 1;
       ptr.ty = (ev.clientY / window.innerHeight) * 2 - 1;
     };
-    window.addEventListener('pointermove', onPointer, { passive: true });
+    if (!lite) window.addEventListener('pointermove', onPointer, { passive: true });
 
     const apply = (p: number, dt: number): void => {
       const vw = window.innerWidth;
@@ -161,6 +169,50 @@ export default function HeroCardTrack() {
       const k = 1 - Math.exp(-6 * dt);
       ptr.x += (ptr.tx - ptr.x) * k;
       ptr.y += (ptr.ty - ptr.y) * k;
+
+      if (lite) {
+        let best = 0;
+        let bestF = -1;
+        CARDS.forEach((_, i) => {
+          const outer = wrapperRefs.current[i];
+          if (!outer) return;
+          const cx = x + centres[i];
+          const d = (cx - vw / 2) / (vw * 0.42);
+          const f0 = clamp01(1 - Math.abs(d));
+          const f = f0 * f0 * (3 - 2 * f0);
+          if (i === 0) firstEntering = clamp01((vw - cx) / (vw * 0.5));
+          if (f > bestF) {
+            bestF = f;
+            best = i;
+          }
+          const enter = clamp01((vw * 1.04 - cx) / (vw * 0.3));
+          const leave = clamp01((vw * 0.1 - cx) / (vw * 0.25));
+          const op = (Math.round(enter * (1 - leave * 0.8) * (0.55 + 0.45 * f) * 50) / 50).toFixed(2);
+          const sc = (0.86 + 0.14 * f).toFixed(3);
+          if (outer.dataset.op !== op) {
+            outer.dataset.op = op;
+            outer.style.opacity = op;
+          }
+          outer.style.transform = `translate3d(0,0,0) scale(${sc})`;
+        });
+        if (best !== activeCard) {
+          activeCard = best;
+          CARDS.forEach((_, i) => {
+            const outer = wrapperRefs.current[i];
+            if (outer) outer.dataset.active = i === best ? 'true' : 'false';
+          });
+          const rgb = rgbRef.current[best];
+          if (mood && rgb) mood.style.backgroundColor = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.34)`;
+        }
+        if (mood) {
+          const mo = (Math.round((firstEntering < 0.05 ? 0 : Math.min(1, bestF * 1.4) * firstEntering) * 25) / 25).toFixed(2);
+          if (mood.dataset.op !== mo) {
+            mood.dataset.op = mo;
+            mood.style.opacity = mo;
+          }
+        }
+        return;
+      }
 
       let sumF = 0;
       let sumR = 0;
@@ -267,6 +319,7 @@ export default function HeroCardTrack() {
           scrollTrigger: { trigger: wrap, start: 'top top', end: () => `top+=${clearHero()} top`, scrub: 0.2 },
         })
         .to(hero, { y: -70, autoAlpha: 0, duration: 0.7 }, 0.05)
+        .fromTo('[data-stage-bg]', { opacity: 0 }, { opacity: 1, duration: 0.45 }, 0.4)
         .fromTo('[data-stage-ui]', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, 0.7)
         .fromTo('[data-stage-flare]', { opacity: 0, scale: 0.3 }, { opacity: 0.9, scale: 1.5, duration: 0.3 }, 0.6)
         .to('[data-stage-flare]', { opacity: 0, duration: 0.25 }, 0.92);
@@ -296,26 +349,31 @@ export default function HeroCardTrack() {
       if (hero) gsap.set(hero, { clearProps: 'all' });
       wrap.style.height = '';
     };
-  }, [reduced]);
+  }, [reduced, lite]);
 
   // The wrapper overlaps the whole first screen, so it must ignore the pointer; only the cards take clicks.
   return (
     <div ref={wrapRef} className={`pointer-events-none relative z-20 ${reduced ? '' : '-mt-[100vh]'}`}>
-      <div className="pointer-events-none sticky top-0 h-screen overflow-hidden">
+      <div className="pointer-events-none sticky top-0 h-screen overflow-hidden [contain:paint]">
         <div
-          className={`absolute inset-0 flex items-center [perspective-origin:50%_50%] [perspective:1400px] ${
+          className={`absolute inset-0 flex items-center ${lite ? '' : '[perspective-origin:50%_50%] [perspective:1400px]'} ${
             reduced ? 'overflow-x-auto' : 'overflow-hidden'
           }`}
         >
+          {/* Solid stage: once the hero has cleared, the card section stands on its own dark ground instead of blending into the hero */}
+          <div data-stage-bg className="pointer-events-none absolute inset-0 bg-brand-bg opacity-0" aria-hidden="true" />
+
           {/* Background wash: the selected card's colour, set every frame by the scroll loop */}
           <div
             ref={moodRef}
-            className="pointer-events-none absolute inset-0 opacity-0 [mask-image:linear-gradient(to_bottom,#000_78%,transparent)]"
+            className={`pointer-events-none absolute inset-0 opacity-0 [mask-image:linear-gradient(to_bottom,#000_78%,transparent)] ${
+              lite ? 'transition-[background-color] duration-700' : ''
+            }`}
             aria-hidden="true"
           />
 
           {/* Streaks of light rushing across the screen: they brighten with scroll speed */}
-          <div data-speed-lines className="pointer-events-none absolute inset-0 overflow-hidden opacity-0" aria-hidden="true">
+          <div data-speed-lines className={`pointer-events-none absolute inset-0 overflow-hidden opacity-0 ${lite ? 'hidden' : ''}`} aria-hidden="true">
             {SPEED_LINES.map((l, i) => (
               <span
                 key={i}
@@ -338,7 +396,7 @@ export default function HeroCardTrack() {
           <div className="pointer-events-none absolute inset-y-0 -right-[10vw] flex items-center" aria-hidden="true">
             <div
               data-stage-flare
-              className="h-[70vw] w-[70vw] rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.5),rgba(255,40,70,0.28)_40%,transparent_70%)] opacity-0 blur-2xl"
+              className={`h-[70vw] w-[70vw] rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.5),rgba(255,40,70,0.28)_40%,transparent_70%)] opacity-0 ${lite ? '' : 'blur-2xl'}`}
             />
           </div>
 
@@ -357,7 +415,7 @@ export default function HeroCardTrack() {
 
           <div
             ref={trackRef}
-            className="relative flex w-max items-center gap-[3vw] pl-[4vw] pr-[20vw] will-change-transform [transform-style:preserve-3d]"
+            className={`relative flex w-max items-center gap-[3vw] pl-[4vw] pr-[20vw] will-change-transform ${lite ? '' : '[transform-style:preserve-3d]'}`}
           >
             {CARDS.map((card, i) => (
               <div
@@ -366,26 +424,33 @@ export default function HeroCardTrack() {
                   wrapperRefs.current[i] = el;
                 }}
                 data-card-in
-                className="pointer-events-auto relative shrink-0 will-change-transform"
+                className="group/c pointer-events-auto relative shrink-0 will-change-transform [backface-visibility:hidden]"
                 // --c: this card's colour. --f / --gx / --gy / --sx are updated every frame by the scroll loop.
-                style={{ '--c': colors[i], '--f': 0.5, '--gx': '50%', '--gy': '50%', '--sx': '50%' } as CSSProperties}
+                data-active="false"
+                style={{ '--c': colors[i], '--f': lite ? 1 : 0.5, '--gx': '50%', '--gy': '50%', '--sx': '50%' } as CSSProperties}
               >
                 {/* Contact glow on the "floor" under the card, stronger when the card is in focus */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -bottom-9 left-[6%] right-[6%] h-10 rounded-[50%] blur-2xl"
-                  style={{ background: 'rgba(var(--c), calc(0.12 + var(--f) * 0.7))' }}
+                  className={`pointer-events-none absolute -bottom-9 left-[6%] right-[6%] h-10 rounded-[50%] blur-2xl ${
+                    lite ? 'opacity-30 transition-opacity duration-500 group-data-[active=true]/c:opacity-100' : ''
+                  }`}
+                  style={{ background: lite ? 'rgba(var(--c), 0.7)' : 'rgba(var(--c), calc(0.12 + var(--f) * 0.7))' }}
                 />
                 <button
                   type="button"
                   aria-label={`Open project: ${card.title}, ${card.subtitle}`}
                   onClick={(ev) => openCard(i, ev.currentTarget)}
                   className="group relative block h-[62vh] w-[78vw] cursor-pointer overflow-hidden rounded-[1.75rem] border text-left sm:w-[52vw] md:h-[68vh] lg:w-[min(38vw,40rem)]"
-                  style={{
-                    borderColor: 'rgba(255,255,255,calc(0.12 + var(--f) * 0.5))',
-                    boxShadow:
-                      '0 40px 110px -24px rgba(var(--c), calc(0.15 + var(--f) * 0.7)), 0 0 calc(var(--f) * 70px) rgba(var(--c), calc(var(--f) * 0.45))',
-                  }}
+                  style={
+                    lite
+                      ? { borderColor: 'rgba(255,255,255,0.22)', boxShadow: '0 28px 60px -28px rgba(var(--c), 0.6)' }
+                      : {
+                          borderColor: 'rgba(255,255,255,calc(0.12 + var(--f) * 0.5))',
+                          boxShadow:
+                            '0 40px 110px -24px rgba(var(--c), calc(0.15 + var(--f) * 0.7)), 0 0 calc(var(--f) * 70px) rgba(var(--c), calc(var(--f) * 0.45))',
+                        }
+                  }
                 >
                   <img
                     ref={(el) => {
@@ -399,7 +464,8 @@ export default function HeroCardTrack() {
                     className="h-full w-full object-cover"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-bg/85 via-transparent to-brand-bg/15" />
-                  {/* Glossy highlight that follows the pointer */}
+                  {/* Glossy highlight that follows the pointer (desktop only) */}
+                  {!lite ? (
                   <div
                     className="pointer-events-none absolute inset-0"
                     style={{
@@ -407,7 +473,9 @@ export default function HeroCardTrack() {
                       opacity: 'calc(var(--f) * 0.9)',
                     }}
                   />
+                  ) : null}
                   {/* Sheen that sweeps across the card as it passes through the centre */}
+                  {!lite ? (
                   <div
                     className="pointer-events-none absolute inset-0"
                     style={{
@@ -416,26 +484,31 @@ export default function HeroCardTrack() {
                       opacity: 'calc(0.25 + var(--f) * 0.75)',
                     }}
                   />
+                  ) : null}
                   {/* Neon frame that tightens in when the card is in focus */}
                   <div
-                    className="pointer-events-none absolute inset-3 rounded-[1.35rem] border border-white/60"
-                    style={{ opacity: 'var(--f)', transform: 'scale(calc(0.94 + var(--f) * 0.06))' }}
+                    className={`pointer-events-none absolute inset-3 rounded-[1.35rem] border border-white/60 ${
+                      lite ? 'opacity-0 transition-opacity duration-500 group-data-[active=true]/c:opacity-100' : ''
+                    }`}
+                    style={lite ? undefined : { opacity: 'var(--f)', transform: 'scale(calc(0.94 + var(--f) * 0.06))' }}
                   />
                   {/* "Open" cue, visible on the focused card */}
                   <span
-                    className="pointer-events-none absolute left-6 top-6 rounded-full border border-white/40 bg-brand-bg/55 px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] backdrop-blur-md"
-                    style={{ opacity: 'var(--f)' }}
+                    className={`pointer-events-none absolute left-6 top-6 rounded-full border border-white/40 bg-brand-bg/70 px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] md:bg-brand-bg/55 md:backdrop-blur-md ${
+                      lite ? 'opacity-0 transition-opacity duration-500 group-data-[active=true]/c:opacity-100' : ''
+                    }`}
+                    style={lite ? undefined : { opacity: 'var(--f)' }}
                   >
                     View project →
                   </span>
                   <div
                     className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 md:p-8"
-                    style={{ transform: 'translateY(calc((1 - var(--f)) * 16px))' }}
+                    style={lite ? undefined : { transform: 'translateY(calc((1 - var(--f)) * 16px))' }}
                   >
-                    <div style={{ transform: 'scale(calc(0.94 + var(--f) * 0.08))', transformOrigin: 'left bottom' }}>
+                    <div style={lite ? undefined : { transform: 'scale(calc(0.94 + var(--f) * 0.08))', transformOrigin: 'left bottom' }}>
                       <p
                         className="text-[11px] uppercase tracking-[0.22em] text-brand-cyan"
-                        style={{ opacity: 'calc(0.55 + var(--f) * 0.45)' }}
+                        style={lite ? undefined : { opacity: 'calc(0.55 + var(--f) * 0.45)' }}
                       >
                         {card.subtitle}
                       </p>

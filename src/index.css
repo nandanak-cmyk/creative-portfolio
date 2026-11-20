@@ -224,4 +224,10 @@ body {
   .light-drift {
     will-change: auto;
   }
+  /* A blurred glass layer over moving content is re-rendered every frame on phones, which flickers the text under it. */
+  [class*='backdrop-blur'],
+  .glass-card {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
 }
