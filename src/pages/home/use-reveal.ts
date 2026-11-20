@@ -30,30 +30,43 @@ export function useReveal(root: RefObject<HTMLElement>): void {
       if (cancelled) return;
       const touch = window.matchMedia('(pointer: coarse)').matches;
       ctx = gsap.context(() => {
+        // Headlines: words slide in from the sides, alternating left and right, and settle in a line.
         gsap.utils.toArray<HTMLElement>('[data-split]').forEach((block) => {
-          gsap.from(block.querySelectorAll('[data-word]'), {
-            yPercent: 120,
-            rotate: 7,
-            skewY: 6,
-            opacity: 0,
-            duration: 0.85,
-            ease: 'expo.out',
-            stagger: 0.045,
-            delay: Number(block.dataset.delay ?? 0),
-            scrollTrigger: { trigger: block, start: 'top bottom-=60', once: true },
+          const words = block.querySelectorAll<HTMLElement>('[data-word]');
+          words.forEach((w, i) => {
+            gsap.fromTo(
+              w,
+              { x: i % 2 === 0 ? -110 : 110, opacity: 0, skewX: i % 2 === 0 ? 10 : -10 },
+              {
+                x: 0,
+                opacity: 1,
+                skewX: 0,
+                duration: 0.8,
+                ease: 'expo.out',
+                delay: Number(block.dataset.delay ?? 0) + i * 0.04,
+                clearProps: 'transform,opacity',
+                scrollTrigger: { trigger: block, start: 'top bottom-=60', once: true },
+              },
+            );
           });
         });
 
-        gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((node) => {
-          gsap.from(node, {
-            y: 36,
-            opacity: 0,
-            duration: 0.75,
-            ease: 'power4.out',
-            clearProps: 'transform,opacity',
-            delay: Number(node.dataset.delay ?? 0),
-            scrollTrigger: { trigger: node, start: 'top bottom-=40', once: true },
-          });
+        // Everything else that reveals (labels, paragraphs, tabs, cards) glides in from alternating sides too.
+        gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((node, i) => {
+          gsap.fromTo(
+            node,
+            { x: i % 2 === 0 ? -90 : 90, y: 24, opacity: 0 },
+            {
+              x: 0,
+              y: 0,
+              opacity: 1,
+              duration: 1,
+              ease: 'power4.out',
+              clearProps: 'transform,opacity',
+              delay: Number(node.dataset.delay ?? 0),
+              scrollTrigger: { trigger: node, start: 'top bottom-=40', once: true },
+            },
+          );
         });
 
         gsap.utils.toArray<HTMLElement>('[data-parallax]').forEach((node) => {
@@ -111,6 +124,20 @@ export function useReveal(root: RefObject<HTMLElement>): void {
               xPercent: Number(node.dataset.drift ?? -15),
               ease: 'none',
               scrollTrigger: { trigger: node.parentElement ?? node, start: 'top bottom', end: 'bottom top', scrub: 0.5 },
+            },
+          );
+        });
+
+        // Sections after About: the content rises into place as the section arrives (not on phones).
+        gsap.utils.toArray<HTMLElement>('[data-section-rise]').forEach((node) => {
+          if (touch) return;
+          gsap.fromTo(
+            node,
+            { y: 80 },
+            {
+              y: 0,
+              ease: 'none',
+              scrollTrigger: { trigger: node, start: 'top bottom', end: 'top 45%', scrub: 0.6 },
             },
           );
         });

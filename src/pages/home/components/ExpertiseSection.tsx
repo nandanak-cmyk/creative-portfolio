@@ -7,11 +7,11 @@ import SectionBackdrop from './SectionBackdrop';
 
 export default function ExpertiseSection() {
   return (
-    <section id="expertise"  className="relative px-5 py-28 md:px-10 md:py-40">
+    <section id="expertise"  className="relative px-5 py-14 md:px-10 md:py-20">
       <SectionBackdrop variant="expertise" />
       <div data-float="-160" className="pointer-events-none absolute left-[calc(50%-25rem)] top-[calc(50%-17rem)] h-[34rem] w-[50rem] max-w-full rounded-full bg-[radial-gradient(closest-side,rgba(255,0,60,0.12),rgba(0,107,255,0.1)_60%,transparent)] blur-3xl" />
 
-      <div className="relative mx-auto max-w-7xl">
+      <div data-section-rise className="relative mx-auto max-w-7xl">
         <SectionLabel>{EXPERTISE.eyebrow}</SectionLabel>
         <SplitHeadline
           text={EXPERTISE.headline}

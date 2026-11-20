@@ -4,7 +4,6 @@ import { HERO } from '../content';
 
 import HeroCardTrack from './HeroCardTrack';
 import MagneticLink from './MagneticLink';
-import ScrambleText from './ScrambleText';
 import SplitHeadline from './SplitHeadline';
 
 // The animated logo artwork (three.js) is its own chunk so the copy paints first.
@@ -26,20 +25,32 @@ export default function HeroSection() {
       >
         <div data-parallax="-70" className="relative z-10 mx-auto w-full max-w-7xl">
           <div className="max-w-3xl">
-            <p className="mb-5 inline-flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-brand-cyan [text-shadow:0_0_14px_rgba(0,207,255,0.7)]">
-              <span className="h-px w-10 bg-gradient-to-r from-brand-red to-brand-blue shadow-[0_0_12px_#FF003C]" />
-              <ScrambleText text={HERO.eyebrow} delay={0.2} />
+            <p data-reveal data-delay={0.2} className="mb-5 text-xs uppercase tracking-[0.28em] text-white/65">
+              {HERO.eyebrow}
             </p>
             <SplitHeadline
               as="h1"
               text={HERO.headline}
               delay={0.3}
+              plain
               className="font-display text-[2.5rem] font-semibold leading-[1.04] tracking-tight sm:text-5xl lg:text-6xl"
             />
+            {/* A brushed stroke under the headline, drawn in as if by hand */}
+            <svg aria-hidden="true" viewBox="0 0 240 14" className="mt-3 h-3 w-40 overflow-visible text-brand-red md:w-56">
+              <path
+                className="hand-stroke"
+                d="M3 9 C 40 2, 70 12, 110 6 S 190 3, 237 8"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                pathLength="1"
+              />
+            </svg>
             <p
               data-reveal
               data-delay={0.9}
-              className="mt-6 max-w-xl text-base leading-relaxed text-brand-white/80 [text-shadow:0_2px_24px_rgba(3,3,5,0.9)] md:text-lg"
+              className="mt-6 max-w-xl text-base leading-relaxed text-[#f4efe8]/85 md:text-lg"
             >
               {HERO.sub}
             </p>
@@ -63,7 +74,7 @@ export default function HeroSection() {
 
         <div className="absolute bottom-4 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-3 text-[10px] uppercase tracking-[0.3em] text-white/40 md:flex">
           Scroll
-          <span className="h-8 w-px animate-scroll-cue bg-gradient-to-b from-brand-red to-brand-blue motion-reduce:animate-none" />
+          <span className="h-8 w-px animate-scroll-cue bg-white/50 motion-reduce:animate-none" />
         </div>
       </div>
 

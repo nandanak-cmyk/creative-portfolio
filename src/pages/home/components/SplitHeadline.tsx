@@ -6,10 +6,12 @@ interface SplitHeadlineProps {
   as?: ElementType;
   className?: string;
   delay?: number;
+  /** Calm, editorial type: warm white with the accent words in one flat red, no gradients or glow. */
+  plain?: boolean;
 }
 
 /** Masked word-by-word headline with a neon-chrome fill, animated by `useReveal`. */
-export default function SplitHeadline({ text, as: Tag = 'h2', className = '', delay = 0 }: SplitHeadlineProps) {
+export default function SplitHeadline({ text, as: Tag = 'h2', className = '', delay = 0, plain = false }: SplitHeadlineProps) {
   const parts = text.split('*');
   const words = parts.flatMap((part, i) =>
     part
@@ -19,13 +21,15 @@ export default function SplitHeadline({ text, as: Tag = 'h2', className = '', de
   );
 
   return (
-    <Tag className={`neon-glow ${className}`} data-split data-delay={delay}>
+    <Tag className={`${plain ? '' : 'neon-glow'} ${className}`} data-split data-delay={delay}>
       {words.map(({ word, accent }, i) => (
         <Fragment key={`${word}-${i}`}>
           {/* A real space between words keeps the heading readable to assistive tech and copy/paste. */}
           {i > 0 ? ' ' : null}
-          <span className="inline-block overflow-hidden pb-[0.16em] align-top">
-            <span data-word className={`inline-block will-change-transform ${accent ? 'neon-liquid' : 'neon-chrome'}`}>
+          <span className="inline-block pb-[0.16em] align-top">
+            <span data-word className={`inline-block will-change-transform ${
+                plain ? (accent ? 'text-brand-red' : 'text-[#f4efe8]') : accent ? 'neon-liquid' : 'neon-chrome'
+              }`}>
               {word}
             </span>
           </span>

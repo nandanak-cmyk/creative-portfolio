@@ -10,12 +10,12 @@ export default function ContactSection() {
     <section
       id="contact"
       
-      className="relative flex min-h-screen flex-col justify-end overflow-hidden px-5 pb-10 pt-28 md:px-10"
+      className="relative flex min-h-screen flex-col justify-end overflow-hidden px-5 pb-10 pt-16 md:px-10"
     >
       <SectionBackdrop variant="contact" />
       <div className="pointer-events-none absolute left-1/2 top-1/3 h-[38rem] w-[60rem] max-w-full -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(255,0,60,0.2),rgba(0,107,255,0.12)_60%,transparent)] blur-3xl" />
 
-      <div className="relative mx-auto w-full max-w-7xl text-center">
+      <div data-section-rise className="relative mx-auto w-full max-w-7xl text-center">
         <div className="flex justify-center">
           <SectionLabel>{CONTACT.eyebrow}</SectionLabel>
         </div>
@@ -37,13 +37,13 @@ export default function ContactSection() {
           <MagneticLink
             href={CONTACT_HREF}
             strength={0.5}
-            className="inline-block rounded-full bg-gradient-to-r from-brand-red to-brand-crimson px-10 py-4 text-base font-semibold shadow-[0_0_56px_-6px_#FF003C] transition-shadow hover:shadow-[0_0_90px_-4px_#FF003C]"
+            className="btn-premium inline-block px-10 py-4 text-base font-semibold"
           >
             {CONTACT.cta}
           </MagneticLink>
           <MagneticLink
             href="#projects"
-            className="inline-block rounded-full border border-white/25 px-10 py-4 text-base font-semibold backdrop-blur-md transition-colors hover:border-brand-blue hover:bg-brand-blue/15"
+            className="btn-glass inline-block px-10 py-4 text-base font-semibold"
           >
             {CONTACT.secondary}
           </MagneticLink>

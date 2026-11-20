@@ -23,6 +23,7 @@ export interface HeroSceneHandle {
 }
 
 const IMAGE_URL = '/hero-logo.webp';
+const SHOW_CRYSTALS = false;
 const IMAGE_ASPECT = 1536 / 1024;
 
 /** Where the mark's visual centre sits inside the picture (fraction from the left / top). */
@@ -169,7 +170,10 @@ export function createHeroScene(
 
   const scene = new Scene();
   const camera = new OrthographicCamera(-1, 1, 1, -1, -10, 10);
-  const crystals = createCrystals(renderer, lowPower);
+  // The floating 3D crystals are switched off: they read as a stock render. (The code stays, in case they come back.)
+  const crystals: ReturnType<typeof createCrystals> = SHOW_CRYSTALS
+    ? createCrystals(renderer, lowPower)
+    : ({ render: () => undefined, resize: () => undefined, dispose: () => undefined } as unknown as ReturnType<typeof createCrystals>);
 
   const geometry = new PlaneGeometry(1, 1);
   const layerDefs: ReadonlyArray<(typeof LAYERS)[number]> = withLogo ? LAYERS : [];

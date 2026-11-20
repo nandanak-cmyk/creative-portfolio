@@ -177,45 +177,38 @@ export const GALLERY = {
 
 export const MARQUEE_WORDS = ['Branding', 'UI/UX Design', 'Web Development', 'Digital Solutions'] as const;
 
-export const SERVICES = {
-  eyebrow: 'Services',
-  headline: '*Services.*',
-  items: [
-    {
-      index: '01',
-      title: 'Branding',
-      text: 'Identity systems, strategy, naming, typography and art direction that make a brand unmistakable.',
-      tags: ['Identity', 'Strategy', 'Art direction'],
-    },
-    {
-      index: '02',
-      title: 'UI/UX Design',
-      text: 'Product and website interfaces designed around real behaviour, then sharpened until they feel inevitable.',
-      tags: ['Research', 'Prototyping', 'Design systems'],
-    },
-    {
-      index: '03',
-      title: 'Web Development',
-      text: 'Fast, accessible, animation-rich sites and web apps engineered to scale with the business.',
-      tags: ['Next.js', 'WebGL', 'CMS'],
-    },
-    {
-      index: '04',
-      title: 'Digital Solutions',
-      text: 'Campaigns, platforms and automation that connect creative thinking to measurable growth.',
-      tags: ['Campaigns', 'E-commerce', 'Automation'],
-    },
-  ],
-} as const;
-
 export const PROCESS = {
   eyebrow: 'Process',
   headline: 'From first thought to *final form.*',
   steps: [
-    { index: '01', title: 'Discover', text: 'Understand the brand, audience, goals, and challenges.' },
-    { index: '02', title: 'Explore', text: 'Explore ideas, visual directions, moodboards, and concepts.' },
-    { index: '03', title: 'Design', text: 'Transform concepts into refined and meaningful experiences.' },
-    { index: '04', title: 'Deliver', text: 'Bring the work to life with attention to every detail.' },
+    {
+      index: '01',
+      title: 'Discover',
+      text: 'Understand the brand, audience, goals, and challenges.',
+      image: '/process-discover.webp',
+      imageAlt: 'Creative team reviewing research and references together',
+    },
+    {
+      index: '02',
+      title: 'Explore',
+      text: 'Explore ideas, visual directions, moodboards, and concepts.',
+      image: '/process-explore.webp',
+      imageAlt: 'Designer arranging visual references and material swatches',
+    },
+    {
+      index: '03',
+      title: 'Design',
+      text: 'Transform concepts into refined and meaningful experiences.',
+      image: '/process-design.webp',
+      imageAlt: 'Digital product designer working on interface prototypes',
+    },
+    {
+      index: '04',
+      title: 'Deliver',
+      text: 'Bring the work to life with attention to every detail.',
+      image: '/process-deliver.webp',
+      imageAlt: 'Creative team presenting finished digital work',
+    },
   ],
 } as const;
 
@@ -247,30 +240,6 @@ export const EXPERTISE = {
 } as const;
 
 /** Placeholder testimonials, exactly as supplied. Replace with real client quotes. */
-export const TESTIMONIALS = {
-  eyebrow: 'Testimonials',
-  headline: 'Heard from the people we *built with.*',
-  items: [
-    {
-      quote:
-        'They turned a vague brief into an identity our whole team could rally behind. Sharp thinking, flawless execution.',
-      name: 'Client name (placeholder)',
-      role: 'Founder, Company (placeholder)',
-    },
-    {
-      quote:
-        'The site feels alive. Every interaction was considered, and it launched ahead of schedule without cutting a corner.',
-      name: 'Client name (placeholder)',
-      role: 'Marketing Director, Company (placeholder)',
-    },
-    {
-      quote: 'Design and engineering in one room is rare. Adviciya made complex product decisions feel simple.',
-      name: 'Client name (placeholder)',
-      role: 'Head of Product, Company (placeholder)',
-    },
-  ],
-} as const;
-
 export const CONTACT = {
   eyebrow: 'Contact',
   headline: "Have an idea? Let's make it *unforgettable.*",
@@ -282,7 +251,6 @@ export const CONTACT = {
 export const FOOTER = {
   links: [
     { label: 'Work', href: '#projects' },
-    { label: 'Services', href: '#services' },
     { label: 'About', href: '#about' },
     { label: 'Contact', href: '#contact' },
   ],

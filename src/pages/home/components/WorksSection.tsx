@@ -18,7 +18,7 @@ export default function WorksSection() {
   const firstRender = useRef(true);
   const rootRef = useRef<HTMLElement>(null);
 
-  // Live entrance: the heading slides in from the left, the line under it from the right, the tabs rise, and each
+  // Live entrance (the heading, line and tabs use the site-wide side-in reveal): each
   // picture arrives from the side of the screen it sits on (left column from the left, right column from the right).
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -37,9 +37,6 @@ export default function WorksSection() {
           scrollTrigger: { trigger: el, start: 'top 88%', once: true },
         });
       };
-      once(root.querySelector('[data-works-head]'), { x: -140, opacity: 0 });
-      once(root.querySelector('[data-works-sub]'), { x: 140, opacity: 0 }, 0.12);
-      once(root.querySelector('[data-works-tabs]'), { y: 40, opacity: 0 }, 0.2);
       root.querySelectorAll<HTMLElement>('[data-tile]').forEach((tile, i) => {
         const r = tile.getBoundingClientRect();
         const cx = (r.left + r.width / 2) / window.innerWidth;
@@ -83,10 +80,10 @@ export default function WorksSection() {
   }, [category]);
 
   return (
-    <section ref={rootRef} id="projects" className="relative px-5 py-28 md:px-10 md:py-36">
+    <section ref={rootRef} id="projects" className="relative px-5 py-14 md:px-10 md:py-20">
       <SectionBackdrop variant="projects" />
       <div data-float="-160" className="pointer-events-none absolute left-0 top-1/3 h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(closest-side,rgba(0,107,255,0.14),transparent)] blur-2xl" />
-      <div className="relative mx-auto max-w-7xl">
+      <div data-section-rise className="relative mx-auto max-w-7xl">
         <div data-works-head>
           <SectionLabel>{WORK.eyebrow}</SectionLabel>
           <SplitHeadline
@@ -94,13 +91,13 @@ export default function WorksSection() {
             className="font-display text-5xl font-semibold leading-[1.02] tracking-tight md:text-7xl"
           />
         </div>
-        <p data-works-sub className="mt-6 max-w-xl text-base text-brand-white/70 md:text-lg">
+        <p data-reveal className="mt-6 max-w-xl text-base text-brand-white/70 md:text-lg">
           {WORK.sub}
         </p>
 
         {/* Category tabs */}
         <div
-          data-works-tabs
+          data-reveal
           role="tablist"
           aria-label="Filter works by category"
           className="mt-12 flex flex-wrap gap-2.5 md:mt-14"

@@ -12,8 +12,6 @@ import IntroLoader from './components/IntroLoader';
 import Navbar from './components/Navbar';
 import ProcessSection from './components/ProcessSection';
 import ScrollProgress from './components/ScrollProgress';
-import ServicesSection from './components/ServicesSection';
-import TestimonialsSection from './components/TestimonialsSection';
 import WorksSection from './components/WorksSection';
 import { useSmoothScroll } from './hooks/use-smooth-scroll';
 import { recalledHomeScroll } from './nav-state';
@@ -48,10 +46,8 @@ export default function HomePage() {
         <InfiniteGallerySection />
         <AboutSection />
         <WorksSection />
-        <ServicesSection />
         <ProcessSection />
         <ExpertiseSection />
-        <TestimonialsSection />
         <ContactSection />
       </main>
     </div>

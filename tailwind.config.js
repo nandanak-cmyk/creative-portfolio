@@ -15,6 +15,7 @@ export default {
       },
       fontFamily: {
         display: ['"Space Grotesk"', 'Inter', 'system-ui', 'sans-serif'],
+      hand: ['Caveat', '"Segoe Script"', 'cursive'],
         sans: ['Inter', 'system-ui', 'sans-serif'],      },
       keyframes: {
         drift: {

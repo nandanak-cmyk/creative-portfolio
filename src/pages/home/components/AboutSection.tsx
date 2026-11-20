@@ -66,6 +66,10 @@ export default function AboutSection() {
     // Ignore the trigger while the page is still settling (e.g. returning with Back restores a scroll position
     // inside About): only the visitor's own scrolling should open the page.
     let armed = false;
+    let triggered = false;
+    // The moment is when the third section's "The work, in motion" line reaches the top of the screen.
+    const cue = document.querySelector<HTMLElement>('[data-gallery-copy] p') ?? wrap;
+    const CUE_START = 'top 12%';
     const armTimer = window.setTimeout(() => {
       armed = true;
     }, 1200);
@@ -78,7 +82,7 @@ export default function AboutSection() {
       const lenis = getLenis();
       if (lenis) lenis.scrollTo(top, { immediate: true, force: true });
       else window.scrollTo(0, top);
-      gsap.set(section, { clearProps: 'position,top,left,width,height,zIndex,clipPath,overflow' });
+      gsap.set(section, { clearProps: 'position,top,left,width,height,zIndex,clipPath,overflow,opacity,visibility' });
       wrap.style.height = '';
       ScrollTrigger.refresh();
       html.style.overflow = '';
@@ -87,9 +91,20 @@ export default function AboutSection() {
       busy = false;
     };
 
+    const tryOpen = (): void => {
+      if (!triggered || busy) return;
+      if (!armed) {
+        gsap.set(section, { autoAlpha: 1 }); // returning with Back: show it as it is
+        return;
+      }
+      openPage();
+    };
+
     const openPage = (): void => {
-      if (busy || !armed) return;
+      if (busy) return;
       busy = true;
+      gsap.set(section, { autoAlpha: 1 });
+      window.dispatchEvent(new Event('about-open'));
       getLenis()?.stop();
       html.style.overflow = 'hidden';
 
@@ -116,21 +131,28 @@ export default function AboutSection() {
       timeline = gsap
         .timeline({ onComplete: release })
         // The section sweeps in from the right...
-        .to(section, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'power3.inOut' }, 0)
+        .to(section, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.5, ease: 'power3.inOut' }, 0)
         // ...led by a bright edge of light.
-        .fromTo(edge, { left: '100%', opacity: 1 }, { left: '0%', duration: 0.8, ease: 'power3.inOut' }, 0)
-        .to(edge, { opacity: 0, duration: 0.2 }, 0.65)
+        .fromTo(edge, { left: '100%', opacity: 1 }, { left: '0%', duration: 0.5, ease: 'power3.inOut' }, 0)
+        .to(edge, { opacity: 0, duration: 0.15 }, 0.4)
         // Its content slides in behind the edge.
-        .to(text, { x: 0, opacity: 1, duration: 0.75, ease: 'power3.out' }, 0.08)
-        .to(tiles, { x: 0, scale: 1, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.06 }, 0.15);
+        .to(text, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0)
+        .to(tiles, { x: 0, scale: 1, opacity: 1, duration: 0.5, ease: 'power3.out', stagger: 0.04 }, 0.05);
     };
 
-    // Fires as the end of the gallery reaches the bottom of the screen, only when scrolling down into it.
+    // Fires when the cue line reaches the top of the screen while scrolling down.
     const trigger = ScrollTrigger.create({
-      trigger: wrap,
-      start: 'top 92%',
-      onEnter: openPage,
+      trigger: cue,
+      start: CUE_START,
+      onEnter: () => {
+        triggered = true;
+        tryOpen();
+      },
     });
+    // Not reached yet: keep About out of sight until its moment comes.
+    if (cue.getBoundingClientRect().top > window.innerHeight * 0.12) {
+      gsap.set(section, { autoAlpha: 0 });
+    }
 
     return () => {
       window.clearTimeout(armTimer);
@@ -138,7 +160,7 @@ export default function AboutSection() {
       timeline?.kill();
       html.style.overflow = '';
       getLenis()?.start();
-      gsap.set(section, { clearProps: 'position,top,left,width,height,zIndex,clipPath,overflow' });
+      gsap.set(section, { clearProps: 'position,top,left,width,height,zIndex,clipPath,overflow,opacity,visibility' });
       wrap.style.height = '';
     };
   }, []);
@@ -151,21 +173,25 @@ export default function AboutSection() {
         <div className="h-full w-[2px] bg-gradient-to-b from-transparent via-white to-transparent shadow-[0_0_28px_5px_rgba(255,0,60,0.75),0_0_64px_10px_rgba(60,110,255,0.5)]" />
       </div>
 
-      <section ref={sectionRef} id="about" className="relative bg-brand-bg px-5 pb-28 pt-16 md:px-10 md:pb-40 md:pt-24">
+      <section ref={sectionRef} id="about" className="relative bg-brand-bg px-5 pb-14 pt-16 md:px-10 md:pb-20 md:pt-24">
         <SectionBackdrop variant="about" />
 
         <div data-about-content className="relative mx-auto grid max-w-7xl items-center gap-14 md:grid-cols-[1.05fr_1fr] md:gap-16">
           <div data-about-text>
-            <SectionLabel>{ABOUT.eyebrow}</SectionLabel>
+            <SectionLabel plain>{ABOUT.eyebrow}</SectionLabel>
             <SplitHeadline
               text={ABOUT.headline}
+              plain
               className="font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl"
             />
             <ScrubText text={ABOUT.text} className="mt-8 text-lg leading-relaxed text-brand-white md:text-2xl md:leading-snug" />
-            {/* A thin line of light that keeps travelling, so the block never feels static */}
-            <div aria-hidden="true" className="relative mt-10 h-px w-full max-w-md overflow-hidden bg-white/10">
-              <div className="about-sweep absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-brand-red to-transparent" />
-            </div>
+            {/* A handwritten sign-off, the way a person would close a note */}
+            <p data-reveal className="mt-10 -rotate-2 font-hand text-3xl text-[#f4efe8]/90 md:text-4xl">
+              — the Adviciya team
+              <svg aria-hidden="true" viewBox="0 0 200 12" className="mt-1 h-2 w-40 text-brand-red">
+                <path className="hand-stroke" d="M2 7 C 40 1, 80 11, 120 5 S 175 3, 198 7" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" pathLength="1" />
+              </svg>
+            </p>
           </div>
 
           <div data-about-wall>

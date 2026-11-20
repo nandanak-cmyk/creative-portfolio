@@ -99,7 +99,7 @@ export default function AboutPhotoWall() {
         onClick={rememberHomeScroll}
         aria-label={`Open project: ${lead.title}`}
         data-wall-tile
-        className="group relative col-span-2 row-span-2 overflow-hidden rounded-2xl border border-white/15 shadow-[0_30px_90px_-30px_rgba(255,0,60,0.55)]"
+        className="group relative col-span-2 row-span-2 overflow-hidden rounded-[6px] border-[6px] border-[#efe8dc] shadow-[0_24px_50px_-20px_rgba(0,0,0,0.85)] [rotate:-1.2deg]"
       >
         <img
           src={lead.image}
@@ -110,14 +110,20 @@ export default function AboutPhotoWall() {
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-bg/85 via-transparent to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 md:p-6">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-brand-cyan">{lead.subtitle}</p>
+          <p className="text-[10px] uppercase tracking-[0.22em] text-white/75">{lead.subtitle}</p>
           <p className="mt-1 font-display text-xl font-semibold md:text-3xl">{lead.title}</p>
         </div>
       </Link>
 
       {/* Tiles that turn over */}
       {tiles.map((tile, i) => (
-        <div key={i} data-wall-tile className="aspect-square [perspective:900px]" aria-hidden="true">
+        <div
+          key={i}
+          data-wall-tile
+          className="aspect-square [perspective:900px]"
+          style={{ rotate: `${[1.6, -1.8, 1.1, -1.4, 1.9][i % 5]}deg` }}
+          aria-hidden="true"
+        >
           <div
             className="relative h-full w-full [transform-style:preserve-3d]"
             style={{ transform: `rotateY(${tile.deg}deg)`, transition: `transform ${FLIP_MS}ms cubic-bezier(0.22,1,0.36,1)` }}
@@ -130,7 +136,7 @@ export default function AboutPhotoWall() {
                 loading="lazy"
                 decoding="async"
                 draggable={false}
-                className="absolute inset-0 h-full w-full rounded-2xl border border-white/15 object-cover [backface-visibility:hidden]"
+                className="absolute inset-0 h-full w-full rounded-[4px] border-[5px] border-[#efe8dc] object-cover shadow-[0_18px_36px_-18px_rgba(0,0,0,0.85)] [backface-visibility:hidden]"
                 style={{ transform: face === 1 ? 'rotateY(180deg)' : undefined }}
               />
             ))}

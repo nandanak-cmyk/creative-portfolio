@@ -51,7 +51,8 @@ export default function IntroLoader() {
       img.src = "/hero-logo.webp";
     });
 
-    const intro = gsap.timeline();
+    // Held until the web fonts are in, so the wordmark never swaps typeface while it animates.
+    const intro = gsap.timeline({ paused: true });
     intro
       // fromTo (explicit start AND end), never from(): React dev mode mounts twice, and a second from()
       // would read the already-hidden state as its end state and animate nothing.
@@ -94,6 +95,13 @@ export default function IntroLoader() {
         },
         0.1,
       );
+
+    void Promise.race([
+      document.fonts.ready,
+      new Promise<void>((resolve) => window.setTimeout(resolve, 700)),
+    ]).then(() => {
+      if (!killed) intro.play();
+    });
 
     const wait = new Promise<void>((resolve) =>
       window.setTimeout(resolve, MAX_WAIT_MS),

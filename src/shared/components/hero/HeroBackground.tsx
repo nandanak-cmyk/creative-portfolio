@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
-import HeroEdges from './HeroEdges';
-import { createHeroScene } from './hero-scene';
+import { introPlayed } from "@/shared/intro-gate";
+
+import HeroEdges from "./HeroEdges";
+import { createHeroScene } from "./hero-scene";
 
 interface HeroBackgroundProps {
   /**
@@ -29,19 +31,27 @@ export default function HeroBackground({ logo = true }: HeroBackgroundProps) {
 
     let disposed = false;
     let dispose: (() => void) | undefined;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
-    // Creating the renderer can throw synchronously when WebGL is unavailable; never let that blank the page.
-    try {
-      createHeroScene(canvas, container, reduced, () => disposed, { logo })
-        .then((handle) => {
-          if (disposed) handle.dispose();
-          else dispose = handle.dispose;
-        })
-        .catch(() => setFailed(true));
-    } catch {
-      setFailed(true);
-    }
+    // Building the scene (renderer, shaders, textures) is heavy. While the opening window plays, wait until its first
+    // moments have painted so the wordmark rises smoothly; the scene is still ready well before the doors open.
+    const startScene = (): void => {
+      if (disposed) return;
+      // Creating the renderer can throw synchronously when WebGL is unavailable; never let that blank the page.
+      try {
+        createHeroScene(canvas, container, reduced, () => disposed, { logo })
+          .then((handle) => {
+            if (disposed) handle.dispose();
+            else dispose = handle.dispose;
+          })
+          .catch(() => setFailed(true));
+      } catch {
+        setFailed(true);
+      }
+    };
+    const sceneTimer = window.setTimeout(startScene, introPlayed() ? 0 : 750);
 
     // On the hero, fade the whole backdrop (sky + artwork) as it is scrolled past.
     let raf = 0;
@@ -56,20 +66,25 @@ export default function HeroBackground({ logo = true }: HeroBackgroundProps) {
       if (!raf) raf = requestAnimationFrame(fade);
     };
     if (logo) {
-      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener("scroll", onScroll, { passive: true });
       fade();
     }
 
     return () => {
       disposed = true;
+      window.clearTimeout(sceneTimer);
       dispose?.();
       cancelAnimationFrame(raf);
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener("scroll", onScroll);
     };
   }, [logo]);
 
   return (
-    <div ref={wrapRef} className="hero-sky pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+    <div
+      ref={wrapRef}
+      className="hero-sky pointer-events-none absolute inset-0 z-0 overflow-hidden"
+      aria-hidden="true"
+    >
       {failed ? (
         logo ? (
           <div className="absolute inset-0 bg-[url('/hero-logo.webp')] bg-contain bg-top bg-no-repeat md:bg-center" />
