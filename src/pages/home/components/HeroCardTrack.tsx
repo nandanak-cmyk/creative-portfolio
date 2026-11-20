@@ -188,7 +188,7 @@ export default function HeroCardTrack() {
             bestF = f;
             best = i;
           }
-          const enter = clamp01((vw * 1.04 - cx) / (vw * 0.3));
+          const enter = clamp01((vw * 0.98 - cx) / (vw * 0.26));
           const leave = clamp01((vw * 0.1 - cx) / (vw * 0.25));
           const op = (Math.round(enter * (1 - leave * 0.8) * (0.55 + 0.45 * f) * 50) / 50).toFixed(2);
           const sc = (0.86 + 0.14 * f).toFixed(3);
@@ -239,7 +239,7 @@ export default function HeroCardTrack() {
           sumB += rgb[2] * f;
         }
 
-        const enter = clamp01((vw * 1.04 - cx) / (vw * 0.3));
+        const enter = clamp01((vw * 0.98 - cx) / (vw * 0.26));
         const leave = clamp01((vw * 0.1 - cx) / (vw * 0.25));
         const opacity = enter * (1 - leave * 0.8) * (0.5 + 0.5 * f);
 
